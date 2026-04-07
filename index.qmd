@@ -157,7 +157,7 @@ The application of IDW interpolation with varying parameters revealed clear limi
 
 A major critical observation is the spatial plausibility of the interpolation, especially in the Alps. IDW is a purely mathematical, distance-based algorithm that ignores topography and physical barriers. Since NO₂ is primarily driven by local traffic and combustion, interpolating high values from valley stations evenly across vast, unpopulated mountain ranges is highly unrealistic.
 
-In contrast, the Nearest Neighbour (Voronoi) approach offers a significant conceptual advantage. While less visually smooth, it acts as a transparent indicator of data reliability: small polygons in the flatlands indicate high station density and higher confidence, whereas massive polygons in the Alps instantly highlight areas of high uncertainty due to data scarcity. Furthermore, Voronoi polygons preserve the exact measured values without mathematical dilution, avoiding the false sense of precision that IDW's smooth gradients might suggest.
+In contrast, the Nearest Neighbour (Voronoi) approach offers a significant conceptual advantage. While less visually smooth, it acts as a transparent indicator of data reliability: small polygons in the flatlands indicate high station density and higher confidence, whereas bigger      polygons in the Alps instantly highlight areas of high uncertainty due to data scarcity. Furthermore, Voronoi polygons preserve the exact measured values without mathematical dilution, avoiding the false sense of precision that IDW's smooth gradients might suggest.
 
 ## Density Estimation
 
@@ -171,13 +171,6 @@ rotmilan_ppp <- ppp(rotmilan_coords[,1], rotmilan_coords[,2], window = swiss_win
 
 # Basic kernel density with default sigma
 density_default <- density(rotmilan_ppp, eps = 1000)
-
-# Visualize
-plot(density_default, 
-     main = "Kernel Density Estimation of Red Kite Locations\n(Default Sigma)",
-     xlab = "longitude", 
-     ylab = "latitude ")
-plot(st_geometry(switzerland), add = TRUE, border = "black", lwd = 1.5)
 ```
 
 #### Testing different sigma values
@@ -195,21 +188,29 @@ plot(density_sigma500,
      main = "Kernel Density: σ = 500m",
      xlab = "longitude", ylab = "latitude")
 plot(st_geometry(switzerland), add = TRUE, border = "black")
+plot(st_geometry(rotmilan), add = TRUE, pch = ".", col = adjustcolor("white", alpha.f = 0.5))
+
 
 plot(density_sigma2000, 
      main = "Kernel Density: σ = 2000m",
      xlab = "longitude", ylab = "latitude")
 plot(st_geometry(switzerland), add = TRUE, border = "black")
+plot(st_geometry(rotmilan), add = TRUE, pch = ".", col = adjustcolor("white", alpha.f = 0.5))
+
 
 plot(density_sigma5000, 
      main = "Kernel Density: σ = 5000m",
      xlab = "longitude", ylab = "latitude")
 plot(st_geometry(switzerland), add = TRUE, border = "black")
+plot(st_geometry(rotmilan), add = TRUE, pch = ".", col = adjustcolor("white", alpha.f = 0.5))
+
 
 plot(density_default, 
      main = "Kernel Density: Default σ",
      xlab = "longitude ", ylab = "latitude ")
 plot(st_geometry(switzerland), add = TRUE, border = "black")
+plot(st_geometry(rotmilan), add = TRUE, pch = ".", col = adjustcolor("white", alpha.f = 0.5))
+
 
 par(mfrow = c(1, 1))
 ```
@@ -306,6 +307,8 @@ The Kernel Density Estimation (KDE) highlights a common challenge when analyzing
 
 Because the data density at this specific site is astronomically high compared to the rest of the country, the visualization scale is heavily skewed. Methods calculating small bandwidths, such as bw.diggle (sigma ≈ 54m) and bw.ppl (sigma ≈ 696m), severely undersmooth the data. They accurately pinpoint the exact roosting location but fail to reveal any broader movement patterns or home ranges. On the other extreme, bw.CvL (sigma ≈ 81km) heavily oversmooths the data, creating a massive, uninformative density blob that covers regions the bird may never have visited.
 
-For this specific dataset, bw.scott (sigma ≈ 4.3km / 1.8km) provided the most ecologically meaningful result. The resulting oval shape visualizes the actual habitat utilization and general movement range of the red kite rather than just highlighting its primary resting spot. But still, it seems too small to realy capture the true density of the birds locations.
+For this specific dataset, bw.scott (sigma ≈ 4.3km / 1.8km) provided somewhat of a meaningful result. The resulting oval shape visualizes the actual habitat utilization and general movement range of the red kite rather than just highlighting its primary resting spot. But still, it seems too small to realy capture the true density of the birds locations.
+
+The default sigma could actually capture the general area of activity by covering more or less the exact area and may be the best option for this dataset.
 
 Using Voronoi polygon areas as a density proxy effectively highlights the core habitat in western Switzerland through dense clusters of small polygons, while sparsely populated margins naturally result in large polygons. However, a critical limitation of this purely geometric method is the creation of long, narrow polygons. These shapes can mathematically indicate a high density due to their small total area, while simultaneously stretching into ecologically unsuitable regions that the red kite would realistically never visit, making the visualization potentially misleading for interpreting actual habitat use.
